@@ -1,0 +1,35 @@
+# Git
+.git
+.gitignore
+
+# Python cache
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments (dependencies installed in container)
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+
+# Testing artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Documentation (not needed in image)
+docs/
+
+# Docker files themselves
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Environment variable files
+.env
