@@ -28,5 +28,5 @@ UniEvents/
 ## Auth Flows
 
 - **Students**: Google OAuth on the landing page. Only `@student.usv.ro` emails accepted.
-- **Organizers**: Created by admin, login via `/login` with email+password.
+- **Organizers**: Register via public request form, login via `/login` with email+password after admin approval.
 - **Admin**: Seeded via migration, login via `/login` with email+password.
