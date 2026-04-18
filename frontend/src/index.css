@@ -1,0 +1,105 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy: #272f54;
+  --color-blue: #83bde5;
+  --color-coral: #ff8383;
+  --color-yellow: #fff574;
+  --color-mint: #a1d6cb;
+  --color-lavender: #a19ad3;
+  --color-peach: #ffb899;
+  --color-sky: #8eaee0;
+  --color-rose: #e6a1c0;
+  --color-green: #8dc9a0;
+
+  --font-display: "Sora", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  --color-navy: #272f54;
+  --color-blue: #83bde5;
+  --color-coral: #ff8383;
+  --color-yellow: #fff574;
+  --color-mint: #a1d6cb;
+  --color-lavender: #a19ad3;
+  --color-peach: #ffb899;
+  --color-sky: #8eaee0;
+  --color-rose: #e6a1c0;
+  --color-green: #8dc9a0;
+}
+
+html,
+body {
+  font-family: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  color: #1a1f3a;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-display {
+  font-family: "Sora", ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.text-gradient-brand {
+  background-image: linear-gradient(135deg, #272f54 0%, #83bde5 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.bg-gradient-hero {
+  background:
+    radial-gradient(1000px circle at 0% 0%, rgba(131, 189, 229, 0.35), transparent 50%),
+    radial-gradient(800px circle at 100% 10%, rgba(161, 154, 211, 0.28), transparent 55%),
+    radial-gradient(900px circle at 50% 100%, rgba(255, 184, 153, 0.28), transparent 60%),
+    linear-gradient(180deg, #f7faff 0%, #eef2fb 100%);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow:
+    0 20px 50px -20px rgba(39, 47, 84, 0.25),
+    0 8px 24px -12px rgba(39, 47, 84, 0.1);
+}
+
+.glass-card-solid {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(39, 47, 84, 0.08);
+  box-shadow:
+    0 20px 50px -20px rgba(39, 47, 84, 0.2),
+    0 8px 24px -12px rgba(39, 47, 84, 0.08);
+}
+
+.floating-blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(60px);
+  opacity: 0.55;
+  pointer-events: none;
+  animation: float 12s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -20px) scale(1.05);
+  }
+  66% {
+    transform: translate(-20px, 25px) scale(0.97);
+  }
+}
+
+::selection {
+  background: rgba(131, 189, 229, 0.45);
+  color: #272f54;
+}
