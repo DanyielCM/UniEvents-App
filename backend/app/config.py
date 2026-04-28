@@ -32,8 +32,12 @@ class Settings(BaseSettings):
     SMTP_USE_TLS: bool = True
 
     FRONTEND_BASE_URL: str = "http://localhost:3000"
-
     CORS_ORIGINS: str = "http://localhost:3000"
+    BACKEND_BASE_URL: str = "http://localhost:8000"
+
+    UPLOAD_DIR: str = "/app/uploads"
+    UPLOAD_MAX_SIZE_MB: int = 10
+    QR_CODE_BASE_URL: str = "http://localhost:3000/events"
 
 
 settings = Settings()

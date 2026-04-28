@@ -1,2 +1,12 @@
+from app.models.category import Category  # noqa: F401
+from app.models.event import Event  # noqa: F401
+from app.models.favorite import Favorite  # noqa: F401
+from app.models.feedback import Feedback  # noqa: F401
+from app.models.location import Location  # noqa: F401
+from app.models.material import EventMaterial  # noqa: F401
 from app.models.organizer_request import OrganizerRequest  # noqa: F401
+from app.models.registration import Registration  # noqa: F401
+from app.models.reminder import Reminder  # noqa: F401
+from app.models.scraped_event import ScrapedEvent  # noqa: F401
+from app.models.sponsor import Sponsor  # noqa: F401
 from app.models.user import User  # noqa: F401

@@ -24,6 +24,15 @@ async def get_user_by_google_id(db: AsyncSession, google_id: str) -> User | None
     return result.scalar_one_or_none()
 
 
+async def get_organizers_public(db: AsyncSession) -> list[User]:
+    result = await db.execute(
+        select(User)
+        .where(User.role == UserRole.ORGANIZER, User.is_active.is_(True))
+        .order_by(User.last_name, User.first_name)
+    )
+    return list(result.scalars().all())
+
+
 async def get_users(db: AsyncSession, skip: int = 0, limit: int = 20) -> list[User]:
     result = await db.execute(select(User).offset(skip).limit(limit))
     return list(result.scalars().all())

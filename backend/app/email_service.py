@@ -91,6 +91,96 @@ async def send_request_rejected(
     await _send(to, subject, body)
 
 
+async def send_waitlist_promoted(
+    to: str, first_name: str, event_title: str, ticket_url: str
+) -> None:
+    subject = f"Loc disponibil — {event_title}"
+    body = (
+        f"Bună, {first_name}!\n\n"
+        f"Vești bune! Un loc s-a eliberat la evenimentul «{event_title}».\n"
+        "Înscrierea ta a fost confirmată automat și ai primit un bilet QR.\n\n"
+        f"Accesează biletul tău: {ticket_url}\n\n"
+        "— Echipa UniEvents USV"
+    )
+    await _send(to, subject, body)
+
+
+async def send_registration_confirmed(
+    to: str,
+    first_name: str,
+    event_title: str,
+    event_start: str,
+    ticket_token: str,
+    ticket_url: str,
+) -> None:
+    subject = f"Înregistrare confirmată — {event_title}"
+    body = (
+        f"Bună, {first_name}!\n\n"
+        f"Înscrierea ta la evenimentul «{event_title}» a fost confirmată.\n\n"
+        f"📅 Data: {event_start}\n"
+        f"🎫 Codul biletului tău: {ticket_token}\n\n"
+        f"Accesează biletul QR aici: {ticket_url}\n\n"
+        "Prezintă codul QR la intrare pentru a fi înregistrat ca participant.\n\n"
+        "— Echipa UniEvents USV"
+    )
+    await _send(to, subject, body)
+
+
+async def send_registration_cancelled(
+    to: str, first_name: str, event_title: str
+) -> None:
+    subject = f"Înregistrare anulată — {event_title}"
+    body = (
+        f"Bună, {first_name}!\n\n"
+        f"Înscrierea ta la evenimentul «{event_title}» a fost anulată.\n\n"
+        "Dacă ai anulat din greșeală, te poți reînscrie oricând dacă mai sunt locuri disponibile.\n\n"
+        "— Echipa UniEvents USV"
+    )
+    await _send(to, subject, body)
+
+
+async def send_event_submitted_to_admin(
+    to: str, event_title: str, event_id: int
+) -> None:
+    subject = f"[UniEvents] Eveniment nou pentru validare: {event_title}"
+    body = (
+        f"Un organizator a trimis un eveniment nou pentru validare:\n\n"
+        f"• Titlu: {event_title}\n"
+        f"• ID: {event_id}\n\n"
+        f"Revizuiește evenimentul: {settings.FRONTEND_BASE_URL}/admin/validare-evenimente\n\n"
+        "— UniEvents USV"
+    )
+    await _send(to, subject, body)
+
+
+async def send_event_approved(
+    to: str, organizer_name: str, event_title: str
+) -> None:
+    subject = f"Evenimentul tău a fost aprobat — {event_title}"
+    body = (
+        f"Bună, {organizer_name}!\n\n"
+        f"Evenimentul «{event_title}» a fost aprobat și este acum vizibil pe platformă.\n\n"
+        f"Vizualizează-l: {settings.FRONTEND_BASE_URL}/evenimente\n\n"
+        "— Echipa UniEvents USV"
+    )
+    await _send(to, subject, body)
+
+
+async def send_event_rejected(
+    to: str, organizer_name: str, event_title: str, reason: str
+) -> None:
+    subject = f"Evenimentul tău a fost respins — {event_title}"
+    body = (
+        f"Bună, {organizer_name}!\n\n"
+        f"Evenimentul «{event_title}» nu a putut fi publicat.\n\n"
+        f"Motiv: {reason}\n\n"
+        "Poți edita evenimentul și retrimite cererea din contul tău de organizator.\n\n"
+        f"Autentifică-te: {settings.FRONTEND_BASE_URL}/login\n\n"
+        "— Echipa UniEvents USV"
+    )
+    await _send(to, subject, body)
+
+
 async def send_organizer_created_by_admin(
     to: str, first_name: str, temporary_password: str
 ) -> None:

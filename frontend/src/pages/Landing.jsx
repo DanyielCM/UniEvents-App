@@ -1,44 +1,26 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { CalendarDays, MapPin, Sparkles } from "lucide-react";
+import { ArrowRight, CalendarDays, Sparkles } from "lucide-react";
 
+import EventCard from "../components/events/EventCard";
 import GoogleSignInButton from "../components/GoogleSignInButton";
 import { useAuth } from "../hooks/useAuth";
 import { loginWithGoogle } from "../services/auth";
-
-const PLACEHOLDER_EVENTS = [
-  {
-    id: 1,
-    title: "Hackathon USV 2026",
-    category: "Carieră",
-    date: "10 mai 2026",
-    location: "Corp C, Sala C201",
-    tone: "#83BDE5",
-  },
-  {
-    id: 2,
-    title: "Workshop: Introducere în inteligență artificială",
-    category: "Academic",
-    date: "15 mai 2026",
-    location: "Corp E, Amfiteatru",
-    tone: "#A19AD3",
-  },
-  {
-    id: 3,
-    title: "Târgul de carieră USV",
-    category: "Carieră",
-    date: "20 mai 2026",
-    location: "Aula Magna",
-    tone: "#FFB899",
-  },
-];
+import { getPublicEvents } from "../services/events.js";
 
 export default function Landing() {
   const { user, logout, refreshUser } = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
+
+  useEffect(() => {
+    getPublicEvents({ sort: "starts_at", size: 6 })
+      .then((data) => setUpcomingEvents(data.items || []))
+      .catch(() => {});
+  }, []);
 
   async function handleGoogleSuccess(tokenResponse) {
     setError("");
@@ -186,51 +168,45 @@ export default function Landing() {
         </section>
 
         <section className="mt-16">
-          <div className="flex items-end justify-between">
+          <div className="flex items-end justify-between mb-6">
             <div>
               <h2 className="font-display text-2xl font-bold text-[#272F54] sm:text-3xl">
                 Ce urmează pe campus
               </h2>
               <p className="mt-1 text-sm text-slate-600">
-                O selecție din evenimentele apropiate.
+                Cele mai apropiate evenimente aprobate.
               </p>
             </div>
+            <Link
+              to="/evenimente"
+              className="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-[#272F54]/70 hover:text-[#272F54] transition"
+            >
+              Vezi toate <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
 
-          <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {PLACEHOLDER_EVENTS.map((event, idx) => (
-              <motion.article
-                key={event.id}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.45, delay: idx * 0.08 }}
-                whileHover={{ y: -4 }}
-                className="glass-card-solid relative overflow-hidden rounded-3xl p-6"
-              >
-                <div
-                  className="absolute inset-x-0 top-0 h-1.5"
-                  style={{ background: event.tone }}
-                />
-                <span
-                  className="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-[#272F54]"
-                  style={{ background: `${event.tone}55` }}
-                >
-                  {event.category}
-                </span>
-                <h3 className="mt-3 font-display text-lg font-bold text-[#272F54]">
-                  {event.title}
-                </h3>
-                <div className="mt-3 flex items-center gap-2 text-sm text-slate-600">
-                  <CalendarDays className="h-4 w-4 text-[#272F54]/60" />
-                  {event.date}
-                </div>
-                <div className="mt-1.5 flex items-center gap-2 text-sm text-slate-600">
-                  <MapPin className="h-4 w-4 text-[#272F54]/60" />
-                  {event.location}
-                </div>
-              </motion.article>
-            ))}
+          {upcomingEvents.length > 0 ? (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {upcomingEvents.map((event, i) => (
+                <EventCard key={event.id} event={event} index={i} />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-3 rounded-3xl border border-white/60 bg-white/70 py-14 text-center backdrop-blur">
+              <CalendarDays className="h-10 w-10 text-[#272F54]/20" />
+              <p className="text-sm text-[#272F54]/50">
+                Niciun eveniment publicat momentan. Revino curând!
+              </p>
+            </div>
+          )}
+
+          <div className="mt-6 flex justify-center sm:hidden">
+            <Link
+              to="/evenimente"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-[#272F54]/20 bg-white px-5 py-2.5 text-sm font-semibold text-[#272F54] transition hover:border-[#272F54]/40"
+            >
+              Toate evenimentele <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
         </section>
       </main>
