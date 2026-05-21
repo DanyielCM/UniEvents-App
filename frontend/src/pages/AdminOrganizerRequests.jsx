@@ -13,6 +13,8 @@ import {
   XCircle,
 } from "lucide-react";
 
+import Navbar from "../components/Navbar";
+
 import { apiFetch } from "../services/api";
 
 const ORGANIZER_TYPE_LABELS = {
@@ -94,14 +96,8 @@ export default function AdminOrganizerRequests() {
 
   return (
     <div className="min-h-screen bg-gradient-hero">
+      <Navbar />
       <div className="mx-auto max-w-6xl px-4 py-8">
-        <Link
-          to="/dashboard"
-          className="inline-flex items-center gap-2 text-sm font-medium text-[#272F54]/80 transition hover:text-[#272F54]"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Înapoi la dashboard
-        </Link>
 
         <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>

@@ -166,11 +166,17 @@ async def get_public_events(
     date_to: datetime | None = None,
     q: str | None = None,
     has_qr: bool | None = None,
+    include_ended: bool = False,
     sort: str = "starts_at",
     page: int = 1,
     size: int = 12,
 ) -> tuple[list[Event], int]:
     conditions = [Event.status == EventStatus.APPROVED]
+
+    if include_ended:
+        conditions.append(Event.ends_at < datetime.now(timezone.utc))
+    else:
+        conditions.append(Event.ends_at >= datetime.now(timezone.utc))
 
     if category_id:
         conditions.append(Event.category_id == category_id)

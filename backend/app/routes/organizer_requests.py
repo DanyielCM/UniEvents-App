@@ -128,6 +128,7 @@ async def approve_request(
         hashed_password=req.hashed_password,
         first_name=req.first_name,
         last_name=req.last_name,
+        organization=req.organization,
     )
     req = await mark_approved(db, req, admin_id=admin.id)
 

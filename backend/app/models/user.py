@@ -34,6 +34,7 @@ class User(Base):
         default=UserRole.STUDENT,
         server_default="student",
     )
+    organization: Mapped[str | None] = mapped_column(String(255), nullable=True)
     google_id: Mapped[str | None] = mapped_column(
         String(255), nullable=True, unique=True
     )

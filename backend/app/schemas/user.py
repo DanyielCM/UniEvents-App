@@ -25,6 +25,7 @@ class UserResponse(UserBase):
 
     id: int
     role: UserRole
+    organization: str | None = None
     is_active: bool
     created_at: datetime
     updated_at: datetime

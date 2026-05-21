@@ -25,13 +25,12 @@ import {
   FileText,
   Image,
   Loader2,
-  LogOut,
   Presentation,
-  Sparkles,
   Trash2,
 } from "lucide-react";
 
-import { useAuth } from "../hooks/useAuth";
+import Navbar from "../components/Navbar";
+
 import FileUploadZone from "../components/forms/FileUploadZone";
 import { getEvent } from "../services/events.js";
 
@@ -95,7 +94,6 @@ async function apiDeleteMaterial(eventId, materialId) {
 
 export default function OrganizerEventMaterials() {
   const { id: eventId } = useParams();
-  const { logout } = useAuth();
 
   const [event, setEvent] = useState(null);
   const [materials, setMaterials] = useState([]);
@@ -141,23 +139,7 @@ export default function OrganizerEventMaterials() {
 
   return (
     <div className="min-h-screen bg-gradient-hero">
-      <header className="border-b border-white/40 bg-white/70 backdrop-blur sticky top-0 z-10">
-        <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-4 py-4">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#272F54] text-white shadow">
-              <Sparkles className="h-5 w-5" />
-            </div>
-            <span className="font-display text-xl font-bold text-[#272F54]">UniEvents USV</span>
-          </Link>
-          <button
-            onClick={logout}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[#272F54]/15 bg-white px-3 py-1.5 text-sm font-semibold text-[#272F54] transition hover:border-[#272F54]/40"
-          >
-            <LogOut className="h-4 w-4" />
-            Deconectare
-          </button>
-        </div>
-      </header>
+      <Navbar maxWidth="max-w-4xl" />
 
       <main className="mx-auto max-w-4xl px-4 py-10">
         {loading ? (

@@ -59,12 +59,14 @@ async def create_organizer_with_hashed_password(
     hashed_password: str,
     first_name: str,
     last_name: str,
+    organization: str | None = None,
 ) -> User:
     user = User(
         email=email,
         hashed_password=hashed_password,
         first_name=first_name,
         last_name=last_name,
+        organization=organization,
         role=UserRole.ORGANIZER,
     )
     db.add(user)
@@ -79,6 +81,7 @@ async def create_organizer_with_plain_password(
     password: str,
     first_name: str,
     last_name: str,
+    organization: str | None = None,
 ) -> User:
     return await create_organizer_with_hashed_password(
         db,
@@ -86,6 +89,7 @@ async def create_organizer_with_plain_password(
         hashed_password=password_hash.hash(password),
         first_name=first_name,
         last_name=last_name,
+        organization=organization,
     )
 
 

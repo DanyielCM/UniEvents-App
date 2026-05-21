@@ -61,6 +61,7 @@ async def create_organizer_direct(
         password=data.password,
         first_name=data.first_name,
         last_name=data.last_name,
+        organization=data.organization,
     )
     background.add_task(
         send_organizer_created_by_admin,

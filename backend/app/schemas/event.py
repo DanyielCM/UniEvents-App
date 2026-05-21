@@ -86,6 +86,7 @@ class OrganizerBrief(BaseModel):
     first_name: str
     last_name: str
     email: str
+    organization: str | None = None
 
 
 class SponsorResponse(BaseModel):
