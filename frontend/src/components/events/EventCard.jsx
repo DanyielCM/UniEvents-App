@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { CalendarDays, MapPin, Users, Wifi } from 'lucide-react';
+import { CalendarDays, Heart, MapPin, Users, Wifi } from 'lucide-react';
 
 const MODALITY_LABEL = {
   physical: 'Fizic',
@@ -24,7 +24,12 @@ function fmt(iso) {
   });
 }
 
-export default function EventCard({ event, index = 0 }) {
+export default function EventCard({
+  event,
+  index = 0,
+  isFavorite = false,
+  onToggleFavorite,
+}) {
   const color = event.category?.color_hex || '#83BDE5';
 
   return (
@@ -54,6 +59,23 @@ export default function EventCard({ event, index = 0 }) {
             background: `linear-gradient(135deg, ${color}33, ${color}11)`,
           }}
         />
+      )}
+
+      {onToggleFavorite && (
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            onToggleFavorite(event);
+          }}
+          title={
+            isFavorite ? 'Elimină din favorite' : 'Adaugă la favorite'
+          }
+          className='absolute right-3 top-9 flex h-9 w-9 items-center justify-center rounded-full bg-white/85 text-[#272F54] shadow-[0_4px_12px_-4px_rgba(39,47,84,0.4)] backdrop-blur transition hover:bg-white'
+        >
+          <Heart
+            className={`h-4 w-4 ${isFavorite ? 'fill-[#FF8383] text-[#FF8383]' : 'text-[#272F54]/60'}`}
+          />
+        </button>
       )}
 
       <div className='flex flex-1 flex-col gap-3 p-5'>

@@ -89,7 +89,12 @@ export default function Login() {
           transition={{ duration: 0.5 }}
           className='mt-8 text-center sm:mt-12'
         >
-          <h1 className='font-display text-4xl font-bold tracking-tight sm:text-5xl'>
+          <img
+            src='/logo.svg'
+            alt='UniEvents USV'
+            className='mx-auto h-16 w-auto'
+          />
+          <h1 className='mt-4 font-display text-4xl font-bold tracking-tight sm:text-5xl'>
             <span className='text-gradient-brand'>Bine ai revenit</span>
           </h1>
           <p className='mx-auto mt-3 max-w-xl text-[15px] text-slate-600'>

@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy import and_, extract, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -21,6 +21,7 @@ from app.schemas.stats import (
     OrganizerReportItem,
     PlatformOverview,
 )
+from app.services.pdf_report import build_admin_report_pdf
 
 router = APIRouter(tags=["statistics"])
 
@@ -99,8 +100,7 @@ async def get_event_stats(event_id: int, current_user: CurrentUser, db: DB):
 
 # ── Admin reports ─────────────────────────────────────────────────────────────
 
-@router.get("/api/v1/admin/reports/overview", response_model=PlatformOverview)
-async def get_overview(_admin: AdminUser, db: DB):
+async def _compute_overview(db: AsyncSession) -> PlatformOverview:
     total_events = (await db.execute(select(func.count(Event.id)))).scalar_one()
     approved = (await db.execute(
         select(func.count(Event.id)).where(Event.status == EventStatus.APPROVED)
@@ -132,8 +132,7 @@ async def get_overview(_admin: AdminUser, db: DB):
     )
 
 
-@router.get("/api/v1/admin/reports/monthly", response_model=MonthlyReport)
-async def get_monthly_report(_admin: AdminUser, db: DB, year: int = 0):
+async def _compute_monthly(db: AsyncSession, year: int = 0) -> MonthlyReport:
     if not year:
         year = datetime.now().year
 
@@ -185,8 +184,7 @@ async def get_monthly_report(_admin: AdminUser, db: DB, year: int = 0):
     return MonthlyReport(year=year, months=months)
 
 
-@router.get("/api/v1/admin/reports/organizers", response_model=list[OrganizerReportItem])
-async def get_organizer_report(_admin: AdminUser, db: DB):
+async def _compute_organizer_report(db: AsyncSession) -> list[OrganizerReportItem]:
     # Events count + avg rating + total participants per organizer
     rows = await db.execute(
         select(
@@ -222,3 +220,35 @@ async def get_organizer_report(_admin: AdminUser, db: DB):
             )
         )
     return results
+
+
+@router.get("/api/v1/admin/reports/overview", response_model=PlatformOverview)
+async def get_overview(_admin: AdminUser, db: DB):
+    return await _compute_overview(db)
+
+
+@router.get("/api/v1/admin/reports/monthly", response_model=MonthlyReport)
+async def get_monthly_report(_admin: AdminUser, db: DB, year: int = 0):
+    return await _compute_monthly(db, year)
+
+
+@router.get("/api/v1/admin/reports/organizers", response_model=list[OrganizerReportItem])
+async def get_organizer_report(_admin: AdminUser, db: DB):
+    return await _compute_organizer_report(db)
+
+
+@router.get("/api/v1/admin/reports/pdf")
+async def get_report_pdf(_admin: AdminUser, db: DB, year: int = 0):
+    if not year:
+        year = datetime.now().year
+
+    overview = await _compute_overview(db)
+    monthly = await _compute_monthly(db, year)
+    organizers = await _compute_organizer_report(db)
+
+    pdf_bytes = build_admin_report_pdf(overview, monthly, organizers, year)
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="raport-platforma-{year}.pdf"'},
+    )

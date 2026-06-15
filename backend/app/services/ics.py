@@ -1,3 +1,5 @@
+"""ICS calendar export utilities for UniEvents."""
+
 import uuid
 from datetime import datetime
 
@@ -12,6 +14,19 @@ def generate_ics_bytes(
     description: str | None = None,
     uid: str | None = None,
 ) -> bytes:
+    """Create an iCalendar event file as raw bytes.
+
+    Args:
+        title: Event title to include in the calendar invite.
+        starts_at: Event start time.
+        ends_at: Event end time.
+        location: Optional event location.
+        description: Optional event description.
+        uid: Optional UID for the event. A random UUID is generated if omitted.
+
+    Returns:
+        The bytes of a generated .ics file.
+    """
     cal = Calendar()
     cal.add("prodid", "-//UniEvents USV//EN")
     cal.add("version", "2.0")

@@ -31,6 +31,18 @@ class UserResponse(UserBase):
     updated_at: datetime
 
 
+class UserAdminUpdate(BaseModel):
+    role: UserRole | None = None
+    is_active: bool | None = None
+
+
+class PaginatedUsers(BaseModel):
+    items: list[UserResponse]
+    total: int
+    page: int
+    size: int
+
+
 class TokenPair(BaseModel):
     access_token: str
     refresh_token: str

@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import AdminEventsValidation from "./pages/AdminEventsValidation";
 import AdminReports from "./pages/AdminReports";
+import AdminUsers from "./pages/AdminUsers";
 import OrganizerEventStats from "./pages/OrganizerEventStats";
 import AdminOrganizerRequests from "./pages/AdminOrganizerRequests";
 import Dashboard from "./pages/Dashboard";
@@ -9,6 +10,7 @@ import EventEditor from "./pages/EventEditor";
 import Events from "./pages/Events";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
+import MyFavorites from "./pages/MyFavorites";
 import MyRegistrations from "./pages/MyRegistrations";
 import OrganizerEventMaterials from "./pages/OrganizerEventMaterials";
 import OrganizerParticipants from "./pages/OrganizerParticipants";
@@ -32,6 +34,14 @@ export default function App() {
         element={
           <ProtectedRoute roles={["student"]}>
             <MyRegistrations />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/evenimente-favorite"
+        element={
+          <ProtectedRoute roles={["student"]}>
+            <MyFavorites />
           </ProtectedRoute>
         }
       />
@@ -118,6 +128,14 @@ export default function App() {
         element={
           <ProtectedRoute roles={["admin"]}>
             <AdminEventsValidation />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/utilizatori"
+        element={
+          <ProtectedRoute roles={["admin"]}>
+            <AdminUsers />
           </ProtectedRoute>
         }
       />

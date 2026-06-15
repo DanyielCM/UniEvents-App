@@ -12,8 +12,11 @@ import {
 } from 'recharts';
 import {
   ArrowLeft,
+  Frown,
   Loader2,
+  Meh,
   MessageSquare,
+  Smile,
   Star,
   TrendingUp,
   Users,
@@ -22,10 +25,31 @@ import {
 
 import Navbar from '../components/Navbar';
 import { getEvent } from '../services/events.js';
-import { getEventFeedback } from '../services/feedback.js';
+import { getEventFeedback, getEventFeedbackSummary } from '../services/feedback.js';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 const CHART_COLORS = ['#FF8383', '#FFB899', '#FFF574', '#A1D6CB', '#8DC9A0'];
+
+const SENTIMENT_INFO = {
+  positive: { label: 'Pozitiv', icon: Smile, color: '#1f7a52', bg: '#A1D6CB' },
+  neutral: { label: 'Neutru', icon: Meh, color: '#6b7280', bg: '#e5e7eb' },
+  negative: { label: 'Negativ', icon: Frown, color: '#b3433f', bg: '#FF8383' },
+};
+
+function SentimentBadge({ sentiment }) {
+  const info = SENTIMENT_INFO[sentiment];
+  if (!info) return null;
+  const Icon = info.icon;
+  return (
+    <span
+      className='inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold'
+      style={{ backgroundColor: `${info.bg}55`, color: info.color }}
+    >
+      <Icon className='h-3 w-3' />
+      {info.label}
+    </span>
+  );
+}
 
 async function fetchStats(eventId) {
   const token = localStorage.getItem('access_token');
@@ -75,6 +99,7 @@ export default function OrganizerEventStats() {
   const [event, setEvent] = useState(null);
   const [stats, setStats] = useState(null);
   const [feedback, setFeedback] = useState([]);
+  const [feedbackSummary, setFeedbackSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -83,11 +108,13 @@ export default function OrganizerEventStats() {
       getEvent(eventId),
       fetchStats(eventId),
       getEventFeedback(eventId).catch(() => []),
+      getEventFeedbackSummary(eventId).catch(() => null),
     ])
-      .then(([ev, st, fb]) => {
+      .then(([ev, st, fb, fbSummary]) => {
         setEvent(ev);
         setStats(st);
         setFeedback(fb);
+        setFeedbackSummary(fbSummary);
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
@@ -232,11 +259,30 @@ export default function OrganizerEventStats() {
 
             {/* Feedback de la participanți */}
             <div className='mt-6 rounded-3xl border border-white/60 bg-white/85 p-5 backdrop-blur shadow-[0_8px_24px_-12px_rgba(39,47,84,0.2)]'>
-              <div className='flex items-center gap-2 mb-4'>
-                <MessageSquare className='h-5 w-5 text-[#272F54]/60' />
-                <h2 className='font-display text-base font-bold text-[#272F54]'>
-                  Feedback de la participanți
-                </h2>
+              <div className='flex flex-wrap items-center justify-between gap-2 mb-4'>
+                <div className='flex items-center gap-2'>
+                  <MessageSquare className='h-5 w-5 text-[#272F54]/60' />
+                  <h2 className='font-display text-base font-bold text-[#272F54]'>
+                    Feedback de la participanți
+                  </h2>
+                </div>
+                {feedbackSummary?.sentiment_counts && (
+                  <div className='flex flex-wrap items-center gap-2'>
+                    {Object.entries(SENTIMENT_INFO).map(([key, info]) => {
+                      const Icon = info.icon;
+                      return (
+                        <span
+                          key={key}
+                          className='inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold'
+                          style={{ backgroundColor: `${info.bg}55`, color: info.color }}
+                        >
+                          <Icon className='h-3 w-3' />
+                          {feedbackSummary.sentiment_counts[key] ?? 0}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               {feedback.length === 0 ? (
@@ -257,15 +303,18 @@ export default function OrganizerEventStats() {
                         </span>
                       </div>
                       <div className='flex-1 min-w-0'>
-                        {fb.comment ? (
-                          <p className='text-sm text-[#272F54]/80 leading-relaxed'>
-                            {fb.comment}
-                          </p>
-                        ) : (
-                          <p className='text-sm italic text-slate-400'>
-                            Fără comentariu
-                          </p>
-                        )}
+                        <div className='flex flex-wrap items-start gap-2'>
+                          {fb.comment ? (
+                            <p className='flex-1 min-w-0 text-sm text-[#272F54]/80 leading-relaxed'>
+                              {fb.comment}
+                            </p>
+                          ) : (
+                            <p className='flex-1 min-w-0 text-sm italic text-slate-400'>
+                              Fără comentariu
+                            </p>
+                          )}
+                          <SentimentBadge sentiment={fb.sentiment} />
+                        </div>
                         <p className='mt-1 text-xs text-slate-400'>
                           {new Date(fb.submitted_at).toLocaleDateString(
                             'ro-RO',

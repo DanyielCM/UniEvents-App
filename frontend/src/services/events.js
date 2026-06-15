@@ -20,6 +20,10 @@ export async function getPublicOrganizers() {
   return handleJson(await apiFetch("/public/organizers"));
 }
 
+export async function getRecommendedEvents(limit = 6) {
+  return handleJson(await apiFetch(`/recommendations?limit=${limit}`));
+}
+
 // ── Private (authenticated) ─────────────────────────────────────────────────
 
 async function handleJson(resp) {

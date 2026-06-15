@@ -90,7 +90,7 @@ export default function Landing() {
           <div className='flex items-end justify-between mb-6'>
             <div>
               <h2 className='font-display text-2xl font-bold text-[#272F54] sm:text-3xl'>
-                Ce urmează pe campus
+                Ce urmează în campus
               </h2>
               <p className='mt-1 text-sm text-slate-600'>
                 Cele mai apropiate evenimente.

@@ -1,6 +1,6 @@
 import csv
 import io
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user, require_role
 from app.config import settings
+from app.crud import reminder as reminder_crud
 from app.crud import registration as reg_crud
 from app.crud.event import get_event_by_id, get_event_by_id_raw
 from app.database import get_db
@@ -46,6 +47,12 @@ async def _assert_organizer_access(event, current_user: User):
         return
     if current_user.role != UserRole.ORGANIZER or event.organizer_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
+
+
+async def _maybe_create_reminder(db: AsyncSession, registration_id: int, event_starts_at: datetime):
+    remind_at = event_starts_at - timedelta(hours=24)
+    if remind_at > datetime.now(timezone.utc):
+        await reminder_crud.create_for_registration(db, registration_id, remind_at)
 
 
 # ── Student endpoints ─────────────────────────────────────────────────────────
@@ -117,6 +124,7 @@ async def register_for_event(
             ticket_token=reg.ticket_token or "",
             ticket_url=f"{settings.FRONTEND_BASE_URL}/inscrierile-mele",
         )
+        await _maybe_create_reminder(db, reg.id, event.starts_at)
     return reg
 
 
@@ -135,6 +143,7 @@ async def cancel_registration(
         )
     was_confirmed = reg.status == RegistrationStatus.CONFIRMED
     event = await get_event_by_id_raw(db, event_id)
+    await reminder_crud.delete_for_registration(db, reg.id)
     await reg_crud.cancel(db, reg)
     if event:
         background.add_task(
@@ -156,6 +165,7 @@ async def cancel_registration(
                 event_title=event.title,
                 ticket_url=f"{settings.FRONTEND_BASE_URL}/inscrierile-mele",
             )
+            await _maybe_create_reminder(db, promoted.id, event.starts_at)
 
 
 @router.get("/{reg_id}/qr.png")

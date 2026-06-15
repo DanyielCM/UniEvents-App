@@ -2,8 +2,9 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.models.feedback import Feedback
+from app.models.feedback import Feedback, SentimentLabel
 from app.schemas.feedback import FeedbackCreate
+from app.services.sentiment import analyze_sentiment
 
 
 async def get_by_event_user(
@@ -50,10 +51,21 @@ async def get_summary(db: AsyncSession, event_id: int) -> dict:
     )
     distribution = {int(r): c for r, c in dist_rows}
 
+    sentiment_rows = await db.execute(
+        select(Feedback.sentiment, func.count(Feedback.id))
+        .where(Feedback.event_id == event_id)
+        .group_by(Feedback.sentiment)
+    )
+    sentiment_counts = {label.value: 0 for label in SentimentLabel}
+    for sentiment, c in sentiment_rows:
+        if sentiment is not None:
+            sentiment_counts[sentiment.value] = c
+
     return {
         "avg_rating": round(float(avg_raw), 2) if avg_raw else None,
         "count": count,
         "distribution": distribution,
+        "sentiment_counts": sentiment_counts,
     }
 
 
@@ -68,6 +80,7 @@ async def create(
         user_id=user_id,
         rating=data.rating,
         comment=data.comment,
+        sentiment=analyze_sentiment(data.rating, data.comment),
     )
     db.add(fb)
     await db.commit()

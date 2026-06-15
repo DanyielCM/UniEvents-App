@@ -7,11 +7,17 @@ import { Calendar, ChevronDown, Filter, List, Search, X } from 'lucide-react';
 
 import Navbar from '../components/Navbar';
 import EventCard from '../components/events/EventCard';
+import { useAuth } from '../hooks/useAuth';
 import {
   getCategories,
   getPublicEvents,
   getPublicOrganizers,
 } from '../services/events.js';
+import {
+  addFavorite,
+  getMyFavoriteIds,
+  removeFavorite,
+} from '../services/favorites.js';
 
 const MODALITY_OPTIONS = [
   { value: '', label: 'Toate modalitățile' },
@@ -58,12 +64,14 @@ function SelectInput({ value, onChange, className = '', children }) {
 export default function Events() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { user } = useAuth();
 
   const [view, setView] = useState('list');
   const [events, setEvents] = useState([]);
   const [calendarEvents, setCalendarEvents] = useState([]);
   const [categories, setCategories] = useState([]);
   const [organizers, setOrganizers] = useState([]);
+  const [favoriteIds, setFavoriteIds] = useState(new Set());
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
@@ -96,6 +104,35 @@ export default function Events() {
       })
       .catch(() => {});
   }, []);
+
+  // Load favorite IDs for students
+  useEffect(() => {
+    if (user?.role !== 'student') return;
+    getMyFavoriteIds()
+      .then((ids) => setFavoriteIds(new Set(ids)))
+      .catch(() => {});
+  }, [user]);
+
+  async function toggleFavorite(event) {
+    const isFav = favoriteIds.has(event.id);
+    setFavoriteIds((prev) => {
+      const next = new Set(prev);
+      if (isFav) next.delete(event.id);
+      else next.add(event.id);
+      return next;
+    });
+    try {
+      if (isFav) await removeFavorite(event.id);
+      else await addFavorite(event.id);
+    } catch {
+      setFavoriteIds((prev) => {
+        const next = new Set(prev);
+        if (isFav) next.add(event.id);
+        else next.delete(event.id);
+        return next;
+      });
+    }
+  }
 
   // Load events when filters or page changes
   useEffect(() => {
@@ -452,7 +489,15 @@ export default function Events() {
           <>
             <div className='grid gap-6 sm:grid-cols-2 lg:grid-cols-3'>
               {events.map((event, i) => (
-                <EventCard key={event.id} event={event} index={i} />
+                <EventCard
+                  key={event.id}
+                  event={event}
+                  index={i}
+                  isFavorite={favoriteIds.has(event.id)}
+                  onToggleFavorite={
+                    user?.role === 'student' ? toggleFavorite : undefined
+                  }
+                />
               ))}
             </div>
 

@@ -5,23 +5,27 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user, require_role
 from app.crud.user import (
+    count_users,
     create_organizer_with_plain_password,
     deactivate_user,
     get_user_by_email,
     get_user_by_id,
     get_users,
+    set_user_active,
+    set_user_role,
     update_user,
 )
 from app.database import get_db
 from app.email_service import send_organizer_created_by_admin
 from app.models.user import User, UserRole
 from app.schemas.organizer_request import OrganizerCreateByAdmin
-from app.schemas.user import UserResponse, UserUpdate
+from app.schemas.user import PaginatedUsers, UserAdminUpdate, UserResponse, UserUpdate
 
 router = APIRouter(prefix="/api/v1/users", tags=["users"])
 
 CurrentUser = Annotated[User, Depends(get_current_user)]
 DB = Annotated[AsyncSession, Depends(get_db)]
+AdminUser = Annotated[User, Depends(require_role(UserRole.ADMIN))]
 
 
 @router.get("/me", response_model=UserResponse)
@@ -29,14 +33,22 @@ async def get_me(current_user: CurrentUser):
     return current_user
 
 
-@router.get("/", response_model=list[UserResponse])
+@router.get("/", response_model=PaginatedUsers)
 async def list_users(
-    current_user: Annotated[User, Depends(require_role(UserRole.ADMIN))],
+    _admin: AdminUser,
     db: DB,
-    skip: int = 0,
-    limit: int = 20,
+    role: UserRole | None = None,
+    q: str | None = None,
+    is_active: bool | None = None,
+    page: int = 1,
+    size: int = 20,
 ):
-    return await get_users(db, skip=skip, limit=limit)
+    size = min(size, 100)
+    items = await get_users(
+        db, skip=(page - 1) * size, limit=size, role=role, q=q, is_active=is_active
+    )
+    total = await count_users(db, role=role, q=q, is_active=is_active)
+    return PaginatedUsers(items=items, total=total, page=page, size=size)
 
 
 @router.post(
@@ -83,6 +95,38 @@ async def get_user(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
+    return user
+
+
+@router.patch("/{user_id}", response_model=UserResponse)
+async def update_user_admin(
+    user_id: int,
+    data: UserAdminUpdate,
+    current_user: AdminUser,
+    db: DB,
+):
+    user = await get_user_by_id(db, user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
+
+    if user_id == current_user.id:
+        if data.role is not None and data.role != user.role:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Nu îți poți schimba propriul rol.",
+            )
+        if data.is_active is False:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Nu îți poți dezactiva propriul cont.",
+            )
+
+    if data.role is not None:
+        user = await set_user_role(db, user, data.role)
+    if data.is_active is not None:
+        user = await set_user_active(db, user, data.is_active)
     return user
 
 

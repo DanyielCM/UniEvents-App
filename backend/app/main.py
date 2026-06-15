@@ -2,6 +2,7 @@ import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -13,12 +14,15 @@ from app.routes.auth import router as auth_router
 from app.routes.categories import router as categories_router
 from app.routes.events import router as events_router
 from app.routes.events_public import router as events_public_router
+from app.routes.favorites import router as favorites_router
 from app.routes.feedback import router as feedback_router
 from app.routes.stats import router as stats_router
+from app.routes.recommendations import router as recommendations_router
 from app.routes.registrations import router as registrations_router
 from app.routes.locations import router as locations_router
 from app.routes.organizer_requests import router as organizer_requests_router
 from app.routes.users import router as users_router
+from app.services.reminders import run_due_reminders
 
 logging.basicConfig(
     level=logging.INFO,
@@ -29,7 +33,11 @@ logging.basicConfig(
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Path(settings.UPLOAD_DIR).mkdir(parents=True, exist_ok=True)
+    scheduler = AsyncIOScheduler()
+    scheduler.add_job(run_due_reminders, "interval", minutes=15)
+    scheduler.start()
     yield
+    scheduler.shutdown()
     await engine.dispose()
 
 
@@ -51,6 +59,8 @@ app.add_middleware(
 app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR, check_dir=False), name="uploads")
 
 app.include_router(events_public_router)
+app.include_router(favorites_router)
+app.include_router(recommendations_router)
 app.include_router(registrations_router)
 app.include_router(feedback_router)
 app.include_router(stats_router)

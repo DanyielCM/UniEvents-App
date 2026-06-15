@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { LogOut, Sparkles } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 
 import { useAuth } from '../hooks/useAuth';
 
@@ -18,9 +18,7 @@ export default function Navbar({
         className={`mx-auto flex ${maxWidth} items-center justify-between gap-4 px-4 py-4`}
       >
         <Link to='/' className='flex items-center gap-2'>
-          <div className='flex h-9 w-9 items-center justify-center rounded-xl bg-[#272F54] text-white shadow'>
-            <Sparkles className='h-5 w-5' />
-          </div>
+          <img src='/logo.svg' alt='UniEvents USV' className='h-10 w-auto' />
           <span className='font-display text-xl font-bold text-[#272F54]'>
             UniEvents USV
           </span>

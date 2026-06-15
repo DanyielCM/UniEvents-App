@@ -1,3 +1,5 @@
+"""File upload utilities for UniEvents."""
+
 import uuid
 from pathlib import Path
 
@@ -23,6 +25,21 @@ async def save_upload(
     max_size_mb: int,
     upload_dir: str,
 ) -> dict:
+    """Save an uploaded file to the configured upload directory.
+
+    Args:
+        file: The uploaded file object.
+        subdir: The subdirectory under the upload root where the file should be stored.
+        max_size_mb: Maximum allowed size of the file in megabytes.
+        upload_dir: The root upload directory.
+
+    Returns:
+        A dictionary with stored file metadata.
+
+    Raises:
+        HTTPException: If the file exceeds size limits or has an unsupported MIME type.
+    """
+
     content = await file.read()
     size_bytes = len(content)
 
@@ -48,6 +65,12 @@ async def save_upload(
 
 
 def delete_file(filename: str, upload_dir: str) -> None:
+    """Delete a stored file if it exists.
+
+    Args:
+        filename: The relative filename under the upload directory.
+        upload_dir: The root upload directory.
+    """
     path = Path(upload_dir) / filename
     if path.exists():
         path.unlink()

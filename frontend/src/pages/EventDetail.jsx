@@ -9,6 +9,7 @@ import {
   Clock,
   Download,
   FileText,
+  Heart,
   Loader2,
   MapPin,
   QrCode,
@@ -32,6 +33,11 @@ import {
   getPublicEventMaterials,
   getPublicEvents,
 } from '../services/events.js';
+import {
+  addFavorite,
+  getMyFavoriteIds,
+  removeFavorite,
+} from '../services/favorites.js';
 import {
   getMyFeedback,
   getPublicFeedbackSummary,
@@ -110,6 +116,8 @@ export default function EventDetail() {
   const [regError, setRegError] = useState(null);
   const [feedbackSummary, setFeedbackSummary] = useState(null);
   const [myFeedback, setMyFeedback] = useState(undefined); // undefined=loading, null=none
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [favBusy, setFavBusy] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -125,14 +133,18 @@ export default function EventDetail() {
         ? getMyFeedback(id).catch(() => null)
         : Promise.resolve(undefined),
       getRegistrationInfo(id).catch(() => null),
+      user?.role === 'student'
+        ? getMyFavoriteIds().catch(() => [])
+        : Promise.resolve([]),
     ])
-      .then(([ev, mats, reg, summary, myFb, info]) => {
+      .then(([ev, mats, reg, summary, myFb, info, favIds]) => {
         setEvent(ev);
         setMaterials(mats);
         setMyReg(reg);
         setFeedbackSummary(summary);
         setMyFeedback(myFb);
         setRegInfo(info);
+        setIsFavorite(favIds.includes(Number(id)));
         if (ev.category?.id) {
           return getPublicEvents({ category_id: ev.category.id, size: 3 });
         }
@@ -433,6 +445,35 @@ export default function EventDetail() {
 
               {/* Actions */}
               <div className='rounded-3xl border border-white/60 bg-white/85 p-5 shadow-[0_10px_30px_-20px_rgba(39,47,84,0.2)] backdrop-blur space-y-2'>
+                {user?.role === 'student' && (
+                  <button
+                    disabled={favBusy}
+                    onClick={async () => {
+                      setFavBusy(true);
+                      try {
+                        if (isFavorite) {
+                          await removeFavorite(id);
+                          setIsFavorite(false);
+                        } else {
+                          await addFavorite(id);
+                          setIsFavorite(true);
+                        }
+                      } finally {
+                        setFavBusy(false);
+                      }
+                    }}
+                    className={`flex w-full items-center justify-center gap-2 rounded-2xl border px-4 py-2 text-sm font-semibold transition disabled:opacity-50 ${
+                      isFavorite
+                        ? 'border-[#FF8383]/40 bg-[#FF8383]/10 text-rose-700'
+                        : 'border-[#272F54]/20 bg-white/80 text-[#272F54] hover:border-[#272F54]/40'
+                    }`}
+                  >
+                    <Heart
+                      className={`h-4 w-4 ${isFavorite ? 'fill-[#FF8383] text-[#FF8383]' : ''}`}
+                    />
+                    {isFavorite ? 'Elimină din favorite' : 'Adaugă la favorite'}
+                  </button>
+                )}
                 {/* Registration via platform — hidden after event ends */}
                 {user?.role === 'student' &&
                   event.participation_type !== 'free' &&

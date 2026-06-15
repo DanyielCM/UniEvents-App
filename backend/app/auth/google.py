@@ -1,3 +1,5 @@
+"""Google OAuth2 helper utilities for UniEvents."""
+
 import httpx
 from fastapi import HTTPException, status
 
@@ -10,6 +12,16 @@ async def verify_google_access_token(access_token: str) -> dict:
     Uses Google's userinfo endpoint, which only accepts tokens issued for the
     OAuth client our app is configured with. A valid response confirms the
     token's authenticity and provides identifying fields (sub, email, name).
+
+    Args:
+        access_token: A Google OAuth2 access token.
+
+    Returns:
+        The JSON payload returned by Google for the authenticated user.
+
+    Raises:
+        HTTPException: If the token is invalid, the response is missing required
+            fields, or the email is not verified.
     """
     async with httpx.AsyncClient(timeout=10) as client:
         resp = await client.get(

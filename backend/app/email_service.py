@@ -139,6 +139,25 @@ async def send_registration_cancelled(
     await _send(to, subject, body)
 
 
+async def send_event_reminder(
+    to: str,
+    first_name: str,
+    event_title: str,
+    event_start: str,
+    location: str | None,
+) -> None:
+    subject = f"Reminder — {event_title} are loc în curând"
+    body = (
+        f"Bună, {first_name}!\n\n"
+        f"Îți reamintim că evenimentul «{event_title}» la care ești înscris/ă "
+        "are loc în aproximativ 24 de ore.\n\n"
+        f"📅 Data: {event_start}\n"
+        f"📍 Locație: {location or 'online'}\n\n"
+        "— Echipa UniEvents USV"
+    )
+    await _send(to, subject, body)
+
+
 async def send_event_submitted_to_admin(
     to: str, event_title: str, event_id: int
 ) -> None:

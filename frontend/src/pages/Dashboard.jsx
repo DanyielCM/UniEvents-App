@@ -1,18 +1,23 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   BarChart2,
   CalendarDays,
   CalendarCheck,
+  Heart,
   History,
   Mail,
+  Sparkles,
   ShieldCheck,
   Users,
   PlusCircle,
 } from 'lucide-react';
 
 import Navbar from '../components/Navbar';
+import EventCard from '../components/events/EventCard';
 import { useAuth } from '../hooks/useAuth';
+import { getRecommendedEvents } from '../services/events.js';
 
 const ROLE_LABELS = {
   admin: 'Administrator',
@@ -22,6 +27,14 @@ const ROLE_LABELS = {
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const [recommended, setRecommended] = useState([]);
+
+  useEffect(() => {
+    if (user?.role !== 'student') return;
+    getRecommendedEvents(6)
+      .then(setRecommended)
+      .catch(() => setRecommended([]));
+  }, [user]);
 
   return (
     <div className='min-h-screen bg-gradient-hero'>
@@ -115,6 +128,13 @@ export default function Dashboard() {
                 <History className='h-4 w-4' />
                 Evenimente încheiate
               </Link>
+              <Link
+                to='/admin/utilizatori'
+                className='inline-flex items-center gap-2 rounded-xl border border-[#272F54]/20 bg-white px-4 py-2 text-sm font-semibold text-[#272F54] transition hover:border-[#272F54]/40'
+              >
+                <Users className='h-4 w-4' />
+                Utilizatori
+              </Link>
             </div>
           </motion.section>
         )}
@@ -189,6 +209,36 @@ export default function Dashboard() {
               >
                 Înscrierile mele
               </Link>
+              <Link
+                to='/evenimente-favorite'
+                className='inline-flex items-center gap-2 rounded-xl border border-[#272F54]/20 bg-white px-4 py-2 text-sm font-semibold text-[#272F54] transition hover:border-[#272F54]/40'
+              >
+                <Heart className='h-4 w-4' />
+                Evenimente favorite
+              </Link>
+            </div>
+          </motion.section>
+        )}
+
+        {user?.role === 'student' && recommended.length > 0 && (
+          <motion.section
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, delay: 0.15 }}
+            className='mt-8 rounded-3xl border border-white/60 bg-white/85 p-6 shadow-[0_10px_30px_-20px_rgba(39,47,84,0.35)] backdrop-blur'
+          >
+            <div className='flex items-center gap-2 mb-4'>
+              <div className='flex h-9 w-9 items-center justify-center rounded-xl bg-[#FFB899] text-white'>
+                <Sparkles className='h-5 w-5' />
+              </div>
+              <h2 className='font-display text-lg font-bold text-[#272F54]'>
+                Recomandate pentru tine
+              </h2>
+            </div>
+            <div className='grid gap-6 sm:grid-cols-2 lg:grid-cols-3'>
+              {recommended.map((event, i) => (
+                <EventCard key={event.id} event={event} index={i} />
+              ))}
             </div>
           </motion.section>
         )}

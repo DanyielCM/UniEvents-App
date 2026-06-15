@@ -41,3 +41,4 @@ class FeedbackSummary(BaseModel):
     avg_rating: float | None = None
     count: int
     distribution: dict[int, int]
+    sentiment_counts: dict[str, int]

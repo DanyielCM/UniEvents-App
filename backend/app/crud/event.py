@@ -9,6 +9,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.models.event import Event, EventModality, EventStatus, ParticipationType
+from app.models.favorite import Favorite
+from app.models.registration import Registration, RegistrationStatus
 from app.models.sponsor import Sponsor
 from app.schemas.event import EventCreate, EventUpdate, SponsorCreate
 
@@ -217,6 +219,93 @@ async def get_public_events(
         .limit(size)
     )
     return list(result.scalars().all()), total
+
+
+async def get_recommended_events(
+    db: AsyncSession, user_id: int, limit: int = 6
+) -> list[Event]:
+    now = datetime.now(timezone.utc)
+
+    reg_category_rows = await db.execute(
+        select(Event.category_id, func.count(Registration.id))
+        .join(Event, Registration.event_id == Event.id)
+        .where(Registration.user_id == user_id, Event.category_id.isnot(None))
+        .group_by(Event.category_id)
+    )
+    fav_category_rows = await db.execute(
+        select(Event.category_id, func.count(Favorite.id))
+        .join(Event, Favorite.event_id == Event.id)
+        .where(Favorite.user_id == user_id, Event.category_id.isnot(None))
+        .group_by(Event.category_id)
+    )
+    category_scores: dict[int, int] = {}
+    for cat_id, cnt in reg_category_rows:
+        category_scores[cat_id] = category_scores.get(cat_id, 0) + cnt
+    for cat_id, cnt in fav_category_rows:
+        category_scores[cat_id] = category_scores.get(cat_id, 0) + cnt
+    top_categories = sorted(category_scores, key=category_scores.get, reverse=True)
+
+    registered_subq = select(Registration.event_id).where(
+        Registration.user_id == user_id,
+        Registration.status != RegistrationStatus.CANCELLED,
+    )
+    favorited_subq = select(Favorite.event_id).where(Favorite.user_id == user_id)
+
+    base_conditions = [
+        Event.status == EventStatus.APPROVED,
+        Event.ends_at >= now,
+        Event.id.notin_(registered_subq),
+        Event.id.notin_(favorited_subq),
+    ]
+
+    events: list[Event] = []
+    seen_ids: set[int] = set()
+
+    if top_categories:
+        result = await db.execute(
+            select(Event)
+            .options(*_with_relations())
+            .where(*base_conditions, Event.category_id.in_(top_categories))
+            .order_by(Event.starts_at.asc())
+            .limit(limit)
+        )
+        for ev in result.scalars().all():
+            events.append(ev)
+            seen_ids.add(ev.id)
+
+    if len(events) < limit:
+        remaining = limit - len(events)
+        conditions = list(base_conditions)
+        if seen_ids:
+            conditions.append(Event.id.notin_(seen_ids))
+
+        popular_rows = await db.execute(
+            select(Event.id)
+            .outerjoin(
+                Registration,
+                and_(
+                    Registration.event_id == Event.id,
+                    Registration.status.in_(
+                        [RegistrationStatus.CONFIRMED, RegistrationStatus.ATTENDED]
+                    ),
+                ),
+            )
+            .where(*conditions)
+            .group_by(Event.id)
+            .order_by(func.count(Registration.id).desc(), Event.starts_at.asc())
+            .limit(remaining)
+        )
+        popular_ids = [row[0] for row in popular_rows]
+        if popular_ids:
+            result = await db.execute(
+                select(Event).options(*_with_relations()).where(Event.id.in_(popular_ids))
+            )
+            by_id = {ev.id: ev for ev in result.scalars().all()}
+            for eid in popular_ids:
+                if eid in by_id:
+                    events.append(by_id[eid])
+
+    return events
 
 
 # Sponsor CRUD

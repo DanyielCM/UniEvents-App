@@ -13,7 +13,7 @@ import {
   Pie,
   Legend,
 } from 'recharts';
-import { CalendarDays, Loader2, Star, TrendingUp, Users } from 'lucide-react';
+import { CalendarDays, Download, Loader2, Star, TrendingUp, Users } from 'lucide-react';
 
 import Navbar from '../components/Navbar';
 
@@ -40,6 +40,24 @@ async function apiFetch(path) {
   });
   if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
   return resp.json();
+}
+
+async function downloadFile(url, filename) {
+  const token = localStorage.getItem('access_token');
+  try {
+    const resp = await fetch(url, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!resp.ok) throw new Error();
+    const blob = await resp.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  } catch {
+    window.open(url, '_blank');
+  }
 }
 
 function KpiCard({ icon: Icon, label, value, color }) {
@@ -101,13 +119,28 @@ export default function AdminReports() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
+          className='flex flex-wrap items-start justify-between gap-4'
         >
-          <h1 className='font-display text-3xl font-bold text-[#272F54]'>
-            Rapoarte platformă
-          </h1>
-          <p className='mt-1 text-sm text-slate-600'>
-            Statistici agregate pentru întreaga platformă UniEvents USV.
-          </p>
+          <div>
+            <h1 className='font-display text-3xl font-bold text-[#272F54]'>
+              Rapoarte platformă
+            </h1>
+            <p className='mt-1 text-sm text-slate-600'>
+              Statistici agregate pentru întreaga platformă UniEvents USV.
+            </p>
+          </div>
+          <button
+            onClick={() =>
+              downloadFile(
+                `${API_BASE}/admin/reports/pdf?year=${year}`,
+                `raport-platforma-${year}.pdf`,
+              )
+            }
+            className='inline-flex items-center gap-2 rounded-xl bg-[#272F54] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1e2544]'
+          >
+            <Download className='h-4 w-4' />
+            Descarcă raport PDF
+          </button>
         </motion.div>
 
         {loading ? (
