@@ -22,7 +22,7 @@ App: http://localhost:3000 · API docs: http://localhost:8000/docs · Mailhog: h
 Full setup, config and troubleshooting: see [DOCUMENTATIE.md](./DOCUMENTATIE.md).
 
 ## Architecture
-
+```text
 UniEvents/
 ├── docker-compose.yml          # 4 services: backend, frontend, db, mailhog
 ├── backend/                    # FastAPI + SQLAlchemy + Alembic
@@ -43,18 +43,20 @@ UniEvents/
 │       ├── services/           # QR, .ics, PDF reports, reminders, sentiment, Google Calendar, files
 │       └── scripts/            # Seed scripts (admin, categories, organizer, events)
 └── frontend/                   # React + Vite + TailwindCSS
-├── Dockerfile
-├── vite.config.js          # proxies /api/v1 to backend
-└── src/
-├── main.jsx
-├── App.jsx
-├── components/         # Navbar, ProtectedRoute, GoogleSignInButton, events/, feedback/, forms/
-├── contexts/           # AuthContext
-├── hooks/              # useAuth
-├── pages/              # Landing, Login, Dashboard, Events, EventDetail, EventEditor,
-│                       # Organizer* (events, participants, materials, stats),
-│                       # Admin* (validation, requests, reports, users), My* (favorites, registrations)
-└── services/           # API layer (api, auth, events, favorites, feedback, registrations, users)
+    ├── Dockerfile
+    ├── vite.config.js          # proxies /api/v1 to backend
+    └── src/
+        ├── main.jsx
+        ├── App.jsx
+        ├── components/         # Navbar, ProtectedRoute, GoogleSignInButton, events/, feedback/, forms/
+        ├── contexts/           # AuthContext
+        ├── hooks/              # useAuth
+        ├── pages/              # Landing, Login, Dashboard, Events, EventDetail, EventEditor,
+        │                       #   Organizer* (events, participants, materials, stats),
+        │                       #   Admin* (validation, requests, reports, users),
+        │                       #   My* (favorites, registrations)
+        └── services/           # api, auth, events, favorites, feedback, registrations, users
+```
 
 ## Services (Docker Compose)
 
