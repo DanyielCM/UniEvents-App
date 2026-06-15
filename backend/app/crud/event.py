@@ -207,6 +207,8 @@ async def get_public_events(
         order_col = Event.title.asc()
     elif sort == "-starts_at":
         order_col = Event.starts_at.desc()
+    elif sort == "-created_at":
+        order_col = Event.created_at.desc()
     else:
         order_col = Event.starts_at.asc()
 

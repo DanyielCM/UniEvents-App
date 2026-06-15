@@ -10,6 +10,19 @@ function getAccessToken() {
   return localStorage.getItem("access_token");
 }
 
+// FastAPI returns `detail` as a string for most errors, but as a list of
+// { loc, msg, type } objects for 422 validation errors. Normalize both into
+// a readable string so callers never end up rendering "[object Object]".
+export function errorMessage(err, fallback) {
+  const detail = err?.detail;
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail)) {
+    const msgs = detail.map((d) => (typeof d === "string" ? d : d?.msg)).filter(Boolean);
+    if (msgs.length) return msgs.join("; ");
+  }
+  return fallback;
+}
+
 export function setTokens(access, refresh) {
   localStorage.setItem("access_token", access);
   localStorage.setItem("refresh_token", refresh);

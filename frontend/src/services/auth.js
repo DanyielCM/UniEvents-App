@@ -1,4 +1,4 @@
-import { apiFetch, setTokens, clearTokens } from "./api";
+import { apiFetch, setTokens, clearTokens, errorMessage } from "./api";
 
 export async function loginWithCredentials(email, password) {
   const resp = await fetch(
@@ -12,7 +12,7 @@ export async function loginWithCredentials(email, password) {
 
   if (!resp.ok) {
     const err = await resp.json().catch(() => ({}));
-    throw new Error(err.detail || "Autentificarea a eșuat.");
+    throw new Error(errorMessage(err, "Autentificarea a eșuat."));
   }
 
   const data = await resp.json();
@@ -32,7 +32,7 @@ export async function loginWithGoogle(accessToken) {
 
   if (!resp.ok) {
     const err = await resp.json().catch(() => ({}));
-    throw new Error(err.detail || "Autentificarea cu Google a eșuat.");
+    throw new Error(errorMessage(err, "Autentificarea cu Google a eșuat."));
   }
 
   const data = await resp.json();

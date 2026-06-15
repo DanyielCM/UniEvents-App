@@ -1,9 +1,9 @@
-import { apiFetch } from "./api.js";
+import { apiFetch, errorMessage } from "./api.js";
 
 async function handleJson(resp) {
   if (!resp.ok) {
     const err = await resp.json().catch(() => ({}));
-    throw new Error(err.detail || `HTTP ${resp.status}`);
+    throw new Error(errorMessage(err, `HTTP ${resp.status}`));
   }
   return resp.json();
 }

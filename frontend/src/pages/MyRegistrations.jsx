@@ -93,6 +93,7 @@ export default function MyRegistrations() {
   const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [qrModal, setQrModal] = useState(null);
+  const [qrImageSrc, setQrImageSrc] = useState(null);
   const [busy, setBusy] = useState(null);
 
   // Feedback modal state
@@ -109,6 +110,30 @@ export default function MyRegistrations() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (!qrModal) {
+      setQrImageSrc(null);
+      return;
+    }
+    const token = localStorage.getItem('access_token');
+    let objectUrl;
+    fetch(`${API_BASE}/registrations/${qrModal.id}/qr.png`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+      .then((resp) => {
+        if (!resp.ok) throw new Error();
+        return resp.blob();
+      })
+      .then((blob) => {
+        objectUrl = URL.createObjectURL(blob);
+        setQrImageSrc(objectUrl);
+      })
+      .catch(() => setQrImageSrc(null));
+    return () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [qrModal]);
 
   async function handleCancel(reg) {
     if (!window.confirm(`Anulezi înscrierea la «${reg.event.title}»?`)) return;
@@ -435,15 +460,21 @@ export default function MyRegistrations() {
               <p className='text-sm text-slate-500 mb-4 truncate'>
                 {qrModal.event.title}
               </p>
-              <motion.img
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                src={`${API_BASE}/registrations/${qrModal.id}/qr.png`}
-                alt='QR Ticket'
-                className='mx-auto w-48 rounded-2xl shadow'
-              />
+              {qrImageSrc ? (
+                <motion.img
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  src={qrImageSrc}
+                  alt='QR Ticket'
+                  className='mx-auto w-48 rounded-2xl shadow'
+                />
+              ) : (
+                <div className='mx-auto flex h-48 w-48 items-center justify-center'>
+                  <Loader2 className='h-8 w-8 animate-spin text-[#272F54]/40' />
+                </div>
+              )}
               <p className='mt-3 font-mono text-xs text-slate-400 break-all'>
-                {qrModal.ticket_token?.slice(0, 20)}…
+                {qrModal.ticket_token}
               </p>
               <button
                 onClick={() =>

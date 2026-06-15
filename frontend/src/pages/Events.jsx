@@ -28,7 +28,7 @@ const MODALITY_OPTIONS = [
 
 const SORT_OPTIONS = [
   { value: 'starts_at', label: 'Cele mai apropiate' },
-  { value: '-starts_at', label: 'Cele mai recente' },
+  { value: '-created_at', label: 'Cele mai recente' },
   { value: 'title', label: 'Titlu (A-Z)' },
 ];
 
